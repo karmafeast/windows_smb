@@ -1,6 +1,6 @@
 {
   "name": "karmafeast-windows_smb",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "karmafeast",
   "summary": "Module that will manage windows SMB shares via powershell",
   "license": "Apache-2.0",
@@ -19,19 +19,8 @@
         "2008R2",
         "2012",
         "2012R2",
-        "10.0.10586",
-        "NEED OTHER WINDOWS VER CODES and ideally how it wants regex here..."
+        "10.x"
       ]
-    }
-  ],
-  "requirements": [
-    {
-      "name": "pe",
-      "version_requirement": "3.x"
-    },
-    {
-      "name": "puppet",
-      "version_requirement": "3.x"
     }
   ]
 }
