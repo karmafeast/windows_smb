@@ -3,7 +3,6 @@ windows_smb
 
 Module for puppet that can be used to create and manage windows SMB shares, and set verious configuration options for SMB server / client settings on a windows system.
 
-[![Build Status](https://travis-ci.org/voxpupuli/puppet-iis.svg?branch=master)](https://travis-ci.org/voxpupuli/puppet-iis)
 Usage
 --
 Only supports windows OS - only supports windows feature 'FS-BranchCache' where it exists but does NOT restrict attempted auto-install of 'FS-BranchCache feature' - module resources will fail due to dependency if for some reason the windows feature is unavailable for install or the system does not support ps commandlet 'add-windowsfeature'.
