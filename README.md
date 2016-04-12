@@ -11,7 +11,6 @@ Only supports windows OS - only supports windows feature 'FS-BranchCache' where 
         include 'my_smb_file_shares'
     }
 
-Please note, that you need to implement the iis class in your module as in the example below
 
 Examples - `windows_smb::manage_smb_share`
 --
