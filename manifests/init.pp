@@ -34,4 +34,19 @@ class windows_smb {
     require                           => File['c:\temp1'],
   }
 
+  #server smb config settings example - note the 'title' / resource name isn't used in class
+  #note that cannot set ensure to 'absent' as many of these settings REQUIRED for os to function properly - set ensrue => 'default' to reset to defaults
+  windows_smb::manage_smb_server_config{$::clientcert:
+  ensure => present,
+  smb_server_asynchronous_credits               => 1024,
+  smb_server_smb2_credits_min                   => 1024,
+  smb_server_smb2_credits_max                   => 16384,
+  smb_server_max_threads_per_queue              => 64,
+  smb_server_treat_host_as_stable_storage       => true,
+  smb_server_max_channel_per_session            => 32,
+  smb_server_additional_critical_worker_threads => 20,
+  smb_server_additional_delayed_worker_threads  => 20,
+  smb_server_ntfs_8dot3_name_creation           => 'disabled',
+  smb_server_ntfs_disable_last_access_update    => true,
+  }
 }

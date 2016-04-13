@@ -1,6 +1,6 @@
 {
   "name": "karmafeast-windows_smb",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": "karmafeast",
   "summary": "Module that will manage windows SMB shares, server and client settings via powershell",
   "license": "Apache-2.0",
