@@ -1,12 +1,10 @@
+# windows smb share management
 # CAFS not supported in this implementation
-# if a share is created non-temporary then set to temporary with this resource, share will be deleted and recreatd temporary or vice
-# versa
-
-#TODO: add fail for if say auto_install_branchcache but share is not set to branchCache caching mode
+# permission changes will delete and recreate the share - control your implementation
 define windows_smb::manage_smb_share (
+  $ensure = 'present',
   $smb_share_name                    = $title,
   $smb_share_directory               = undef,
-  $ensure = 'present',
   $smb_share_comments                = 'puppet generated smb share',
   $smb_share_concurrent_user_limit   = 0,
   $smb_share_cache                   = 'None',
@@ -19,7 +17,7 @@ define windows_smb::manage_smb_share (
   $smb_share_access_deny             = [],
   $smb_share_autoinstall_branchcache = false) {
   validate_re($ensure, '^(present|absent|purge)$', 'ensure must be one of \'present\', \'absent\', \'purge\'')
-  validate_integer($smb_share_concurrent_user_limit, 4294967296, 0)
+  validate_integer($smb_share_concurrent_user_limit, 4294967295, 0)
   validate_bool($smb_share_encrypt_data)
   validate_bool($smb_share_temporary)
   validate_bool($smb_share_autoinstall_branchcache)
@@ -301,7 +299,6 @@ define windows_smb::manage_smb_share (
       require   => Exec["Create-${smb_share_name}"],
       logoutput => true,
     }
-
 
     exec { "share_permissions-${smb_share_name}":
       command   => "remove-smbshare -name \"${smb_share_name}\" -force;New-SmbShare -Name \"${smb_share_name}\" -Path \"${smb_share_directory}\" -CachingMode ${smb_share_cache} -ConcurrentUserLimit ${smb_share_concurrent_user_limit} -Description \"${smb_share_comments}\" -EncryptData \$${smb_share_encrypt_data} -FolderEnumerationMode ${smb_share_folder_enum_mode}${create_string_temporary_suffix}${create_string_permissions_suffix};",

@@ -5,7 +5,8 @@ define windows_smb::manage_smb_server_config (
   $smb_server_smb2_credits_max                   = 8192,
   $smb_server_max_threads_per_queue              = 20,
   $smb_server_treat_host_as_stable_storage       = false,
-  $smb_server_max_channel_per_session            = undef,
+  $smb_server_max_channel_per_session            = 32,
+  $smb_server_max_session_per_connection         = 16384,
   $smb_server_additional_critical_worker_threads = 0,
   $smb_server_additional_delayed_worker_threads  = 0,
   $smb_server_ntfs_8dot3_name_creation           = undef,
@@ -19,15 +20,11 @@ define windows_smb::manage_smb_server_config (
   validate_integer($smb_server_asynchronous_credits, 4294967295, 1)
   validate_integer($smb_server_smb2_credits_min, 4294967295, 1)
   validate_integer($smb_server_smb2_credits_max, 4294967295, $smb_server_smb2_credits_min)
-  validate_integer($smb_server_max_threads_per_queue, 4294967295, 0)
+  validate_integer($smb_server_smb2_credits_min, $smb_server_smb2_credits_max, 1)
+  validate_integer($smb_server_max_threads_per_queue, 4294967295, 1)
+  validate_integer($smb_server_max_channel_per_session, 4294967295, 1)
+  validate_integer($smb_server_max_session_per_connection, 4294967295, 1)
   validate_bool($smb_server_treat_host_as_stable_storage)
-
-  if ($smb_server_max_channel_per_session == undef) {
-    $process_max_channel_per_session = false
-  } else {
-    validate_integer($smb_server_max_channel_per_session, 4294967295, 0)
-    $process_max_channel_per_session = true
-  }
 
   validate_integer($smb_server_additional_critical_worker_threads, 4294967295, 0)
   validate_integer($smb_server_additional_delayed_worker_threads, 4294967295, 0)
@@ -104,13 +101,18 @@ define windows_smb::manage_smb_server_config (
       logoutput => true,
     }
 
-    if ($process_max_channel_per_session) {
-      exec { 'ensure present - MaxChannelPerSession':
-        command   => "Set-SmbServerConfiguration -MaxChannelPerSession ${smb_server_max_channel_per_session} -force",
-        unless    => "if((Get-SmbServerConfiguration).\"MaxChannelPerSession\" -eq ${smb_server_max_channel_per_session}){exit 0;}else{exit 1;}",
-        provider  => powershell,
-        logoutput => true,
-      }
+    exec { 'ensure present - MaxChannelPerSession':
+      command   => "Set-SmbServerConfiguration -MaxChannelPerSession ${smb_server_max_channel_per_session} -force",
+      unless    => "if((Get-SmbServerConfiguration).\"MaxChannelPerSession\" -eq ${smb_server_max_channel_per_session}){exit 0;}else{exit 1;}",
+      provider  => powershell,
+      logoutput => true,
+    }
+
+    exec { 'ensure present - MaxSessionPerConnection':
+      command   => "Set-SmbServerConfiguration -MaxSessionPerConnection ${smb_server_max_session_per_connection} -force",
+      unless    => "if((Get-SmbServerConfiguration).\"MaxSessionPerConnection\" -eq ${smb_server_max_session_per_connection}){exit 0;}else{exit 1;}",
+      provider  => powershell,
+      logoutput => true,
     }
 
     exec { 'ensure present - AdditionalCriticalWorkerThreads':
@@ -182,8 +184,15 @@ define windows_smb::manage_smb_server_config (
     }
 
     exec { 'ensure default - MaxChannelPerSession':
-      command   => 'Set-SmbServerConfiguration -MaxChannelPerSession 64 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"MaxChannelPerSession\" -eq 64){exit 0;}else{exit 1;}",
+      command   => 'Set-SmbServerConfiguration -MaxChannelPerSession 32 -force',
+      unless    => "if((Get-SmbServerConfiguration).\"MaxChannelPerSession\" -eq 32){exit 0;}else{exit 1;}",
+      provider  => powershell,
+      logoutput => true,
+    }
+
+    exec { 'ensure present - MaxSessionPerConnection':
+      command   => 'Set-SmbServerConfiguration -MaxSessionPerConnection 16384 -force',
+      unless    => "if((Get-SmbServerConfiguration).\"MaxSessionPerConnection\" -eq 16384){exit 0;}else{exit 1;}",
       provider  => powershell,
       logoutput => true,
     }
