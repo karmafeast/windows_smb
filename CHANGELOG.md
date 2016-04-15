@@ -1,3 +1,14 @@
+#2016-04-13 - Release 0.3.0
+###Features
+ - added documentation for `windows_smb::manage_smb_client_config`.
+ - __improvements! many things for `managing smb client settings` on windows added - have fun!__
+
+###Bugfixes
+ -  N/A
+
+###Improvements
+ - many things for `managing smb client settings` on windows added
+
 #2016-04-13 - Release 0.2.0
 ###Features
  - added documentation for `windows_smb::manage_smb_server_config`.

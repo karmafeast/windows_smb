@@ -1,5 +1,5 @@
 define windows_smb::manage_smb_server_config (
-  $ensure = 'present',
+  $ensure                                        = 'present',
   $smb_server_asynchronous_credits               = 512,
   $smb_server_smb2_credits_min                   = 512,
   $smb_server_smb2_credits_max                   = 8192,

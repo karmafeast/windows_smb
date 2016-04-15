@@ -3,17 +3,28 @@ windows_smb
 
 Module for puppet that can be used to create and manage windows SMB shares, and set verious configuration options for SMB server / client settings on a windows system.
 
-Usage
---
-Only supports windows OS - only supports windows feature 'FS-BranchCache' where it exists but does NOT restrict attempted auto-install of 'FS-BranchCache feature' - module resources will fail due to dependency if for some reason the windows feature is unavailable for install or the system does not support ps commandlet 'add-windowsfeature'.
+Very unrestricted limits on settings, I tried to find absolute min/max values for the settings for `windows_smb::manage_smb_server_config` and `window_smb::manage_smb_client_config`.
 
+Stayed away from settings like forcing digital signing etc. as these tend to be managed via group policy.
+
+That's kind of a thing in puppet on windows, you find yourself moving towards replacing things done with GPO.  If people want it, I'll add it.  It is good to reduce infrastructure config to state declaration code.  However, we need to make that transition smooth for admins and not be invasive.
+
+__N.B.__: not making resources depend upon a PowerShell version check - this has been tested OK with version 4 and 5.  Upgrade your Windows Management Framework to 4.0 or higher if you run into bother on old OS.
+
+__TODO__: implement something that does an md5 calc on all params as collapsed string then does the same on the target node in PowerShell.  Make this exec notify the other check/setter resources and mark them refreshonly - refresh on hash mismatch.  This would drastically reduce runtime.
+
+__tested on__: server 2012R2 OK (PS 4), win 10 enterprise OK (PS 5)
+
+Module Usage
+--
+__Only supports windows OS__ - `windows_smb::manage_smb_share` only supports windows feature 'FS-BranchCache' where it exists but does NOT restrict attempted auto-install of 'FS-BranchCache feature' - module resources will fail due to dependency if for some reason the windows feature is unavailable for install or the system does not support ps commandlet 'add-windowsfeature'.
+
+Example Use
+--
     node 'my_file_server.corp.blah.moo' {
         include 'my_smb_file_shares'
     }
 
-
-Examples - `windows_smb::manage_smb_share`
---
       class my_smb_file_shares {
             
           #module will NOT ensure share target directory on file system exists, make sure it does and require it in windows_smb::manage_smb_share resource instance
@@ -60,20 +71,44 @@ Examples - `windows_smb::manage_smb_share`
            smb_server_ntfs_disable_last_access_update    => true,
            }
            
-          # reset to reasonable defaults
-          #windows_smb::manage_smb_server_config{$::clientcert:
-          # ensure                                => default,
-          # }
+        # reset server config settings to defaults
+        # windows_smb::manage_smb_server_config{$::clientcert: ensure => default,}
+
+        windows_smb::manage_smb_client_config{$::clientcert:
+         ensure                                               => 'present',
+         smb_client_connection_count_per_interface            => 16,
+         smb_client_connection_count_per_rss_interface        => 16,
+         smb_client_connection_count_per_rdma_interface       => 16,
+         smb_client_connection_count_per_server_max           => 64,
+         smb_client_dormant_Directory_timeout_seconds         => 500,
+         smb_client_directory_cache_lifetime_seconds          => 15,
+         smb_client_dormant_file_limit                        => 4096,
+         smb_client_directory_cache_entry_size_max_bytes      => 65580,
+         smb_client_file_not_found_cache_lifetime_seconds     => 5,
+         smb_client_file_not_found_cache_entries_max          => 2048,
+         smb_client_file_info_cache_lifetime_seconds          => 5,
+         smb_client_file_info_cache_entries_max               => 1024,
+         smb_client_enable_bandwidth_throttling               => false,
+         smb_client_enable_large_mtu                          => false,
+         smb_client_enable_byte_range_locking_read_only_files => false,
+         smb_client_enable_multichannel                       => false,
+         smb_client_extended_session_timeout_seconds          => 999,
+         smb_client_keep_connection_seconds                   => 555,
+         smb_client_max_commands                              => 8192,
+         smb_client_oplocks_disabled                          => true,
+         smb_client_session_timeout_seconds                   => 45,
+         smb_client_use_opportunistic_locking                 => false,
+         smb_client_window_size_threshold                     => 16
+         }
+        
+       # reset client config settings to defaults
+       # windows_smb::manage_smb_client_config{$::clientcert: ensure => default,}
       }
 
 #`windows_smb::manage_smb_share`
 __THIS MODULE DOES NOT SUPPORT CLUSTERED SHARES UNDER CAFS__
 
 ##`windows_smb::manage_smb_share` parameters
-
-####`smb_share_directory`
-Set this to the fully qualified path to share as string.  Note that this class will NOT ensure that the target file system path for share assurance is present.  Doing so would be invasive coding.  
-Create a File resource for the directory to be shared and make the `windows_smb::manage_smb_share` instance dependent upon it.  this is shown in the example above.
 
 ####`ensure`
 Set the ensure state of the smb share. string.
@@ -82,6 +117,10 @@ Set the ensure state of the smb share. string.
 * __'absent','purge'__: 'absent' / 'purge' will remove the share by share name on the system applying windows_smb::manage_smb_share
 
 __default value__: 'present'
+
+####`smb_share_directory`
+Set this to the fully qualified path to share as string.  Note that this class will NOT ensure that the target file system path for share assurance is present.  Doing so would be invasive coding.  
+Create a File resource for the directory to be shared and make the `windows_smb::manage_smb_share` instance dependent upon it.  this is shown in the example above.
 
 ####`smb_share_comments`
 Set string to put as comments on the share (description)
@@ -184,6 +223,14 @@ Sensible caps on resource params are not implemented.  You may tweak up to the m
 ###Resource 'Name' / 'Title' is irrelivent - suggest set to `$::fqdn` or `$::clientcert` as in example
 Settings are global for the Windows machine the resource is applied against.  For sanity, suggest naming resource `$::fqdn` or `$::clientcert`
 
+####`ensure`
+Set the ensure state of the smb share. string.
+
+* __'present'__: will ensure the smb server config exists and is set as desired
+* __'default'__: 'default' will reset node values to sensible OS defaults.  These may or may not be the most optimal for node use case.
+
+__default value__: 'present'
+
 ###`smb_server_asynchronous_credits`
 Limits the number of concurrent asynchronous SMB commands that are allowed on a single connection. Some cases (such as when there is a front-end server with a back-end IIS server) require a large amount of concurrency (for file change notification requests, in particular). The value of this entry can be increased to support these cases.
 
@@ -285,6 +332,232 @@ __valid values__:
 
 __tweaking notes__: A value of 0 can reduce performance because the system performs additional storage I/O when files and directories are accessed to update date and time information.
 
+#`windows_smb::manage_smb_client_config`
+Avoided `EnableInsecureGuestLogons` as only available windows 10 / server 2016 and documentation I found simply says 'TBD'. so no.
+
+Avoided `EnableLoadBalanceScaleOut` - I do not know enough about impact of this.  Tell me and I'll add it.
+
+Avoided `RequireSecuritySignature` - typically options for client/server digital signing / encryption handled in organization via GPO.  Yes, we can replace a lot of whats going on there with puppet code but at this time I deem that invasive to the Windows OS platform as typically managed in an enterprise.
+
+Manage smb client settings on node.  suggest name resource like so for sanity across your catalog: `windows_smb::manage_smb_client_config{$::clientcert: ensure => present, ...}`
+
+##`windows_smb::manage_smb_client_config` parameters
+Sensible caps on resource params are not implemented.  You may tweak up to the maximum allowed value and it is assumed you will research impact on system performance / viability to serve.  Good luck, have fun!
+
+####`ensure`
+Set the ensure state of the smb share. string.
+
+* __'present'__: will ensure the smb client config exists and is set as desired
+* __'default'__: 'default' will reset node values to sensible OS defaults.  These may or may not be the most optimal for node use case.
+
+__default value__: 'present'
+
+###`smb_client_connection_count_per_interface`
+Uint32. Specifies the maximum connections per interface to be established with a smb server running Windows Server for non-RSS interfaces. 
+
+__valid integer range__: 1 - 16
+
+__default value__: 1
+
+###`smb_client_connection_count_per_rss_interface`
+Uint32. Specifies the maximum connections per rss interface to be established with a server running Windows Server 2012 for RSS interfaces.
+
+__valid integer range__: 1 - 16
+
+__default value__: 4
+
+###`smb_client_connection_count_per_rdma_interface`
+Uint32. Specifies the maximum connections per rss interface to be established with a server running Windows Server 2012 for RDMA interfaces.
+
+__valid integer range__: 1 - 16
+
+__default value__: 2
+
+###`smb_client_connection_count_per_server_max`
+Uint32. Specifies the maximum number of connections to be established with a single smb server running Windows across all interfaces.
+
+__valid integer range__: 1 - 64
+
+__default value__: 32
+
+###`smb_client_dormant_directory_timeout_seconds`
+Uint32. Specifies the maximum time server directory handles held open with directory leases.
+
+__valid integer range__: 0 - 4294967295
+
+__default value__: 600
+
+###`smb_client_directory_cache_lifetime_seconds`
+Uint32. Specifies the directory cache timeout.  This parameter controls caching of directory metadata in the absence of directory leases.
+
+__valid integer range__: 0 - 4294967295
+
+__default value__: 10
+
+###`smb_client_dormant_file_limit`
+Uint32. Specifies the maximum number of files that should be left open on a shared resource after the application has closed the file.
+
+__valid integer range__: 1 - 4294967295
+
+__default value__: 1023
+
+###`smb_client_directory_cache_entry_size_max_bytes`
+Uint32. in bytes. Specifies the maximum size of directory cache entries. The default is 64KB.  Can be increased to max of 16MB.
+
+__valid integer range__: 65536 - 16777216
+
+__default value__: 1023
+
+__tweaking notes__: try 16777216
+
+###`smb_client_directory_cache_entries_max`
+Uint32. in bytes. Specifies the amount of directory information that can be cached by the client. Increasing the value can reduce network traffic and increase performance when large directories are accessed.
+
+__valid integer range__: 1 - 4096
+
+__default value__: 16
+
+__tweaking notes__: recommend set to 4096 - ref: <https://msdn.microsoft.com/en-us/library/windows/hardware/dn567661(v=vs.85).aspx> 
+
+###`smb_client_file_not_found_cache_lifetime_seconds`
+Uint32. in bytes. Specifies the amount of directory information that can be cached by the client. Increasing the value can reduce network traffic and increase performance when large directories are accessed.
+
+__valid integer range__: 0 - 4294967295
+
+__default value__: 5
+
+__tweaking notes__: try increase, e.g. 10 or more, use with `smb_client_file_not_found_cache_entries_max`
+
+###`smb_client_file_not_found_cache_entries_max`
+Uint32. Specifies the amount of file name information that can be cached by the client. Increasing the value can reduce network traffic and increase performance when a large number of file names are accessed.
+
+__valid integer range__: 1 - 65536
+
+__default value__: 128
+
+__tweaking notes__: try increase, use with  `smb_client_file_not_found_cache_lifetime_seconds` - suggest 32768 - ref: <https://msdn.microsoft.com/en-us/library/windows/hardware/dn567661(v=vs.85).aspx> 
+
+###`smb_client_file_info_cache_lifetime_seconds`
+Uint32. The file information cache timeout period.
+
+__valid integer range__: 0 - 4294967295
+
+__default value__: 10
+
+__tweaking notes__: try increase, 15 or more. use with `smb_client_file_info_cache_entries_max`
+
+###`smb_client_file_info_cache_entries_max`
+Uint32. Specifies the amount of file metadata that can be cached by the client. Increasing the value can reduce network traffic and increase performance when a large number of files are accessed.
+
+__valid integer range__: 1 - 65536
+
+__default value__: 64
+
+__tweaking notes__: suggest 32768 - ref: <https://msdn.microsoft.com/en-us/library/windows/hardware/dn567661(v=vs.85).aspx> 
+
+###`smb_client_enable_bandwidth_throttling`
+bool. the SMB redirector throttles throughput across high-latency network connections, in some cases to avoid network-related timeouts. Setting this param to false may result in higher file transfer throughput over high-latency network connections.
+
+__valid values__:
+
+* __true__:  ENABLE bandwidth throttling
+* __false__: DISABLE bandwidth throttling
+
+__default value__: true
+
+__tweaking notes__: suggest false - ref: <https://msdn.microsoft.com/en-us/library/windows/hardware/dn567661(v=vs.85).aspx> 
+
+###`smb_client_enable_large_mtu`
+bool. if enabled (true) the SMB redirector transfers payloads as large as 1 MB per request, which can improve file transfer speed. if disabled, limited to 64 KB.
+
+__valid values__:
+
+* __true__:  ENABLE large MTU
+* __false__: DISABLE large MTU
+
+__default value__: true
+
+###`smb_client_enable_byte_range_locking_read_only_files`
+bool. Controls whether byte-range locking is enabled on read-only files.
+
+__valid values__:
+
+* __true__:  ENABLE byte-range locking on read-only files
+* __false__: DISABLE byte-range locking on read-only files
+
+__default value__: true
+
+###`smb_client_enable_multichannel`
+bool. Enable or disable the use of multiple physical network interfaces.
+
+__valid values__:
+
+* __true__:  ENABLE use of multiple physical network interfaces
+* __false__: DISABLE use of multiple physical network interfaces
+
+__default value__: true
+
+###`smb_client_extended_session_timeout_seconds`
+Uint32. extended session timeout in seconds.
+ 
+__valid integer range__: 0 - 4294967295
+
+__default value__: 1000
+
+###`smb_client_keep_connection_seconds`
+Uint32. How long to keep an smb session open.
+
+__valid integer range__: 0 - 4294967295
+
+__default value__: 600
+
+###`smb_client_max_commands`
+Uint32.  Specifies the maximum number of network control blocks that the redirector can reserve. The value of this entry coincides with the number of execution threads that can be outstanding simultaneously.
+
+__valid integer range__: 0 - 4294967295
+
+__default value__: 50
+
+###`smb_client_oplocks_disabled`
+bool. set this true if opportunistic locking is to be disabled. See `smb_client_use_opportunistic_locking`.  did not mask this setting into one thing as want to expose as much as possible raw in this module.  
+
+__valid values__:
+
+* __true__:  DISABLE use of opportunistic locking
+* __false__: ENABLE use of opportunistic locking
+
+__default value__: false
+
+__tweaking notes__: I don't know what you want to do as a devops person / admin / engineer / architect / whatever we're called today; so you're getting both setting exposed and are not locked to setting both in tandem.  Though this is suggested. see `smb_client_use_opportunistic_locking`
+
+###`smb_client_use_opportunistic_locking`
+Controls whether the opportunistic-locking (oplock) performance enhancement is enabled. If true, the redirector requests an opportunistic lock on any file opened in "Deny None" mode. As a result, the server performs automatic read-ahead and write-behind caching on behalf of the redirector.
+
+__valid values__:
+
+* __true__:  ENABLE use of opportunistic locking
+* __false__: DISABLE use of opportunistic locking
+
+__default value__: true
+
+__tweaking notes__: there may be interference if this is used in certain scenarios but for general use (and os default) sounds like a good idea to use.  leave `smb_client_oplocks_disabled` not specified as a param or specify false for `smb_client_oplocks_disabled` if you want op locking ON.
+
+###`smb_client_session_timeout_seconds`
+Uint32. The number of seconds that the client waits before disconnecting an inactive session.
+
+__valid integer range__: 10 - 65535
+
+__default value__: 60
+
+###`smb_client_window_size_threshold`
+Uint32. The minimum window size before Multichannel will trigger the use of multiple connections. 
+
+__valid integer range__: 10 - 65535
+
+__default value__: 1
+
+__tweaking notes__: The default value is 1 for Windows Server operating systems and 8 for Windows client operating systems.  This module uses 1 as default.  It won't kill the workstation and is what server wants.
+
 References
 --
 __Set-SmbShare documentation__: <https://technet.microsoft.com/en-us/%5Clibrary/jj635727(v=wps.630).aspx>
@@ -294,3 +567,7 @@ __Set-SmbServerConfiguration__: <https://technet.microsoft.com/en-us/library/jj6
 __Performance Tuning for File Servers__: <https://msdn.microsoft.com/en-us/library/windows/hardware/dn567661(v=vs.85).aspx>
 
 __Optimizing Operating System Performance__: <https://msdn.microsoft.com/en-us/library/cc615012(v=bts.10).aspx>
+
+__CIFS and SMB Timeouts in Windows__: <https://blogs.msdn.microsoft.com/openspecification/2013/03/19/cifs-and-smb-timeouts-in-windows/>
+
+__SetConfiguration method of the MSFT_SmbClientConfiguration class__: <https://msdn.microsoft.com/en-us/library/hh830477(v=vs.85).aspx>

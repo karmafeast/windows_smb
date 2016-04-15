@@ -2,7 +2,7 @@
 # CAFS not supported in this implementation
 # permission changes will delete and recreate the share - control your implementation
 define windows_smb::manage_smb_share (
-  $ensure = 'present',
+  $ensure                            = 'present',
   $smb_share_name                    = $title,
   $smb_share_directory               = undef,
   $smb_share_comments                = 'puppet generated smb share',
@@ -21,10 +21,8 @@ define windows_smb::manage_smb_share (
   validate_bool($smb_share_encrypt_data)
   validate_bool($smb_share_temporary)
   validate_bool($smb_share_autoinstall_branchcache)
-  validate_re($smb_share_cache, '^(None|Manual|Programs|Documents|BrancheCache)$', 'smb_share_cache must be one of \'None\', \'Manual\', \'Programs\', \'Documents\', \'BrancheCache\''
-  )
-  validate_re($smb_share_folder_enum_mode, '^(AccessBased|Unrestricted)$', 'smb_share_folder_enum_mode must be one of \'AccessBased\', \'Unrestricted\''
-  )
+  validate_re($smb_share_cache, '^(None|Manual|Programs|Documents|BrancheCache)$', 'smb_share_cache must be one of \'None\', \'Manual\', \'Programs\', \'Documents\', \'BrancheCache\'')
+  validate_re($smb_share_folder_enum_mode, '^(AccessBased|Unrestricted)$', 'smb_share_folder_enum_mode must be one of \'AccessBased\', \'Unrestricted\'')
   validate_array($smb_share_access_full)
   validate_array($smb_share_access_change)
   validate_array($smb_share_access_read)
@@ -48,8 +46,7 @@ define windows_smb::manage_smb_share (
   # if have assigned no permissions whatsoever then fail
   if (empty($smb_share_access_full) and empty($smb_share_access_change) and empty($smb_share_access_read) and empty(
   $smb_share_access_deny)) {
-    fail('this module does not support creation of shares with no share permissions assigned, assign values to at least one of $smb_share_access_full, $smb_share_access_change, $smb_share_access_read, $smb_share_access_deny'
-    )
+    fail('this module does not support creation of shares with no share permissions assigned, assign values to at least one of $smb_share_access_full, $smb_share_access_change, $smb_share_access_read, $smb_share_access_deny')
   }
 
   # check for repeats, for share permissions there can be only one ACE per principal.
