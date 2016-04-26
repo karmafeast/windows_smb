@@ -1,8 +1,8 @@
 {
 	"name": "karmafeast-windows_smb",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"author": "karmafeast",
-	"summary": "Module that will manage windows SMB shares, server and client settings via powershell",
+	"summary": "Module that will manage windows SMB shares, server and client SMB configuration",
 	"license": "Apache-2.0",
 	"source": "https://github.com/karmafeast/windows_smb",
 	"project_page": "https://github.com/karmafeast/windows_smb",
@@ -16,17 +16,14 @@
 		},{
 			"name": "puppet/windowsfeature",
 			"version_requirement": ">= 1.1.0 < 10.0.0"
+		},{
+			"name": "puppetlabs-registry",
+			"version_requirement": ">= 1.0.3 < 10.0.0"
 		}
 	],
-	"tags": [ "microsoft",
-		"windows",
-		"powershell",
+	"tags": ["powershell",
 		"smb",
-		"share",
-		"shares",
-		"server",
-		"config",
-		"client"
+		"shares"
 	],
 	"operatingsystem_support": [{
 			"operatingsystem": "windows",

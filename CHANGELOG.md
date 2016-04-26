@@ -1,4 +1,18 @@
+#2016-04-26 - Release 0.4.0
+
+##NOTE NEW DEPENDENCY ON `puppetlabs_registry` - see metadata.json
+
+###Features
+ - complete rework of resources to manage `windows_smb::manage_client_config` and `windows_smb::manage_server_config` - now like 10x faster to apply due to direct reg mod and its providers direct interface with win APIs
+
+###Bugfixes
+ -  N/A
+
+###Improvements
+ - significant optimization of `windows_smb::manage_client_config` and `windows_smb::manage_server_config`
+
 #2016-04-13 - Release 0.3.0
+
 ###Features
  - added documentation for `windows_smb::manage_smb_client_config`.
  - __improvements! many things for `managing smb client settings` on windows added - have fun!__
@@ -10,6 +24,7 @@
  - many things for `managing smb client settings` on windows added
 
 #2016-04-13 - Release 0.2.0
+
 ###Features
  - added documentation for `windows_smb::manage_smb_server_config`.
  - bug fixes
@@ -24,6 +39,7 @@
 
 
 #2016-04-13 - Release 0.1.3
+
 ###Features
  - added smb server settings class and example in init, documentation to come.  `windows_smb::manage_smb_server_config` safe to use.
 
@@ -34,9 +50,8 @@
  - N/A
 
 #2016-04 - Release 0.1.0
-###Summary
 
-  Initial release - NOTE SUPPORT FOR SMB CLIENT AND SERVER SETTINGS NOT YET IMPLEMENTED - `windows_smb::manage_smb_share` ok to use
+##Initial release - NOTE SUPPORT FOR SMB CLIENT AND SERVER SETTINGS NOT YET IMPLEMENTED - `windows_smb::manage_smb_share` ok to use
 
 ###Features
  - added support for managing smb shares on windows systems

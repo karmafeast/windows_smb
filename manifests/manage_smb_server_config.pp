@@ -1,5 +1,5 @@
 define windows_smb::manage_smb_server_config (
-  $ensure                                        = 'present',
+  $ensure = 'present',
   $smb_server_asynchronous_credits               = 512,
   $smb_server_smb2_credits_min                   = 512,
   $smb_server_smb2_credits_max                   = 8192,
@@ -65,165 +65,125 @@ define windows_smb::manage_smb_server_config (
     }
   }
 
+  $smb_server_settings_create_resource_defaults = {
+    'ensure' => present,
+    'type'   => 'dword',
+  }
+
   if ($ensure == 'present') {
-    exec { 'ensure present - AsynchronousCredits':
-      command   => "Set-SmbServerConfiguration -AsynchronousCredits ${smb_server_asynchronous_credits} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"AsynchronousCredits\" -eq ${smb_server_asynchronous_credits}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
+    if ($smb_server_treat_host_as_stable_storage) {
+      $smb_server_hoststablestorage_reg_dword = 1
+    } else {
+      $smb_server_hoststablestorage_reg_dword = 0
     }
 
-    exec { 'ensure present - Smb2CreditsMin':
-      command   => "Set-SmbServerConfiguration -Smb2CreditsMin ${smb_server_smb2_credits_min} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"Smb2CreditsMin\" -eq ${smb_server_smb2_credits_min}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
+    $reg_values = {
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\AsynchronousCredits'              => {
+        data => $smb_server_asynchronous_credits,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\smb2creditsmin'                   => {
+        data => $smb_server_smb2_credits_min,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\smb2creditsmax'                   => {
+        data => $smb_server_smb2_credits_max,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\MaxThreadsPerQueue'               => {
+        data => $smb_server_max_threads_per_queue,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\treathostasstablestorage'         => {
+        data => $smb_server_hoststablestorage_reg_dword,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\MaxChannelPerSession'             => {
+        data => $smb_server_max_channel_per_session,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\MaxSessionPerConnection'          => {
+        data => $smb_server_max_session_per_connection,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Executive\AdditionalCriticalWorkerThreads' => {
+        data => $smb_server_additional_critical_worker_threads,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Executive\AdditionalDelayedWorkerThreads'  => {
+        data => $smb_server_additional_delayed_worker_threads,
+      }
+      ,
     }
 
-    exec { 'ensure present - Smb2CreditsMax':
-      command   => "Set-SmbServerConfiguration -Smb2CreditsMax ${smb_server_smb2_credits_max} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"Smb2CreditsMax\" -eq ${smb_server_smb2_credits_max}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - MaxThreadsPerQueue':
-      command   => "Set-SmbServerConfiguration -MaxThreadsPerQueue ${smb_server_max_threads_per_queue} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"MaxThreadsPerQueue\" -eq ${smb_server_max_threads_per_queue}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - TreatHostAsStableStorage':
-      command   => "Set-SmbServerConfiguration -TreatHostAsStableStorage \$${smb_server_treat_host_as_stable_storage} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"TreatHostAsStableStorage\" -eq \$${smb_server_treat_host_as_stable_storage}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - MaxChannelPerSession':
-      command   => "Set-SmbServerConfiguration -MaxChannelPerSession ${smb_server_max_channel_per_session} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"MaxChannelPerSession\" -eq ${smb_server_max_channel_per_session}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - MaxSessionPerConnection':
-      command   => "Set-SmbServerConfiguration -MaxSessionPerConnection ${smb_server_max_session_per_connection} -force",
-      unless    => "if((Get-SmbServerConfiguration).\"MaxSessionPerConnection\" -eq ${smb_server_max_session_per_connection}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - AdditionalCriticalWorkerThreads':
-      command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\" AdditionalCriticalWorkerThreads -Value ${smb_server_additional_critical_worker_threads} -Force",
-      unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\").AdditionalCriticalWorkerThreads -eq ${smb_server_additional_critical_worker_threads}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - AdditionalDelayedWorkerThreads':
-      command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\" AdditionalDelayedWorkerThreads -Value ${smb_server_additional_delayed_worker_threads} -Force",
-      unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\").AdditionalDelayedWorkerThreads -eq ${smb_server_additional_delayed_worker_threads}){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
+    create_resources(registry_value, $reg_values, $smb_server_settings_create_resource_defaults)
 
     if ($process_ntfs_8dot3) {
-      exec { 'ensure present - NtfsDisable8dot3NameCreation':
-        command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\" NtfsDisable8dot3NameCreation -Value ${nfts_8dot3_int} -Force",
-        unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\").NtfsDisable8dot3NameCreation -eq ${nfts_8dot3_int}){exit 0;}else{exit 1;}",
-        provider  => powershell,
-        logoutput => true,
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisable8dot3NameCreation':
+        ensure => present,
+        type   => dword,
+        data   => $nfts_8dot3_int,
       }
     }
 
     if ($process_ntfs_disable_last_access_update) {
-      exec { 'ensure present - NtfsDisableLastAccessUpdate':
-        command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\" NtfsDisableLastAccessUpdate -Value ${ntfs_disable_last_access_update_int} -Force",
-        unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\").NtfsDisableLastAccessUpdate -eq ${ntfs_disable_last_access_update_int}){exit 0;}else{exit 1;}",
-        provider  => powershell,
-        logoutput => true,
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate':
+        ensure => present,
+        type   => dword,
+        data   => $ntfs_disable_last_access_update_int,
       }
+
     }
 
   } else {
-    exec { 'ensure default - AsynchronousCredits':
-      command   => 'Set-SmbServerConfiguration -AsynchronousCredits 512 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"AsynchronousCredits\" -eq 512){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
+    $reg_values = {
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\AsynchronousCredits'              => {
+        data => 512,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\smb2creditsmin'                   => {
+        data => 512,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\smb2creditsmax'                   => {
+        data => 8192,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\MaxThreadsPerQueue'               => {
+        data => 20,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\treathostasstablestorage'         => {
+        data => 0,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\MaxChannelPerSession'             => {
+        data => 32,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\MaxSessionPerConnection'          => {
+        data => 16384,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Executive\AdditionalCriticalWorkerThreads' => {
+        data => 0,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Executive\AdditionalDelayedWorkerThreads'  => {
+        data => 0,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisable8dot3NameCreation'                   => {
+        data => 2,
+      }
+      ,
+      'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate'                    => {
+        data => 1,
+      }
+      ,
     }
 
-    exec { 'ensure default - Smb2CreditsMin':
-      command   => 'Set-SmbServerConfiguration -Smb2CreditsMin 512 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"Smb2CreditsMin\" -eq 512){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - Smb2CreditsMax':
-      command   => 'Set-SmbServerConfiguration -Smb2CreditsMax 8192 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"Smb2CreditsMax\" -eq 8192){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - MaxThreadsPerQueue':
-      command   => 'Set-SmbServerConfiguration -MaxThreadsPerQueue 20 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"MaxThreadsPerQueue\" -eq 20){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - TreatHostAsStableStorage':
-      command   => "Set-SmbServerConfiguration -TreatHostAsStableStorage \$false -force",
-      unless    => "if((Get-SmbServerConfiguration).\"TreatHostAsStableStorage\" -eq \$false){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - MaxChannelPerSession':
-      command   => 'Set-SmbServerConfiguration -MaxChannelPerSession 32 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"MaxChannelPerSession\" -eq 32){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - MaxSessionPerConnection':
-      command   => 'Set-SmbServerConfiguration -MaxSessionPerConnection 16384 -force',
-      unless    => "if((Get-SmbServerConfiguration).\"MaxSessionPerConnection\" -eq 16384){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - AdditionalCriticalWorkerThreads':
-      command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\" AdditionalCriticalWorkerThreads -Value 0 -Force",
-      unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\").AdditionalCriticalWorkerThreads -eq 0){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - AdditionalDelayedWorkerThreads':
-      command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\" AdditionalDelayedWorkerThreads -Value 0 -Force",
-      unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Executive\").AdditionalDelayedWorkerThreads -eq 0){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure default - NtfsDisable8dot3NameCreation':
-      command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\" NtfsDisable8dot3NameCreation -Value 2 -Force",
-      unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\").NtfsDisable8dot3NameCreation -eq 2){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
-
-    exec { 'ensure present - NtfsDisableLastAccessUpdate':
-      command   => "Set-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\" NtfsDisableLastAccessUpdate -Value 1 -Force",
-      unless    => "if((Get-ItemProperty -Path \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\").NtfsDisableLastAccessUpdate -eq 1){exit 0;}else{exit 1;}",
-      provider  => powershell,
-      logoutput => true,
-    }
+    create_resources(registry_value, $reg_values, $smb_server_settings_create_resource_defaults)
 
   }
 
