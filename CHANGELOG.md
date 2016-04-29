@@ -1,3 +1,17 @@
+#2016-04-26 - Release 0.4.1
+
+##NOTE NEW DEPENDENCY ON `puppetlabs_registry` as of 0.4.0 - see metadata.json
+
+###Features
+ -  N/A
+
+###Bugfixes
+ -  incorrect code block placement for registry defaults in `windows_smb::manage_client_config` - would cause ensure => default resource create to fail, fixed.
+ -  doc typos fix
+
+###Improvements
+ - N/A
+
 #2016-04-26 - Release 0.4.0
 
 ##NOTE NEW DEPENDENCY ON `puppetlabs_registry` - see metadata.json

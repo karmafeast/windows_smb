@@ -1,7 +1,7 @@
 windows_smb
 ============================
 
-Module for puppet that can be used to create and manage windows SMB shares, and set verious configuration options for SMB server / client settings on a windows system.
+Module for puppet that can be used to create and manage windows SMB shares, and set various configuration options for SMB server / client settings on a windows system.
 
 Very unrestricted limits on settings, I tried to find absolute min/max values for the settings for `windows_smb::manage_smb_server_config` and `window_smb::manage_smb_client_config`.
 
@@ -10,8 +10,6 @@ Stayed away from settings like forcing digital signing etc. as these tend to be 
 That's kind of a thing in puppet on windows, you find yourself moving towards replacing things done with GPO.  If people want it, I'll add it.  It is good to reduce infrastructure config to state declaration code.  However, we need to make that transition smooth for admins and not be invasive.
 
 __N.B.__: not making resources depend upon a PowerShell version check - this has been tested OK with version 4 and 5.  Upgrade your Windows Management Framework to 4.0 or higher if you run into bother on old OS.
-
-__TODO__: implement something that does an md5 calc on all params as collapsed string then does the same on the target node in PowerShell.  Make this exec notify the other check/setter resources and mark them refreshonly - refresh on hash mismatch.  This would drastically reduce runtime.
 
 __tested on__: server 2012R2 OK (PS 4), win 10 enterprise OK (PS 5)
 

@@ -56,6 +56,11 @@ define windows_smb::manage_smb_client_config (
   validate_bool($smb_client_oplocks_disabled)
   validate_bool($smb_client_use_opportunistic_locking)
 
+  $smb_client_settings_create_resource_defaults = {
+    'ensure' => present,
+    'type'   => 'dword',
+  }
+
   if ($ensure == 'present') {
     if ($smb_client_enable_bandwidth_throttling) {
       $smb_client_bandwidththrottle_reg_dword = 0
@@ -79,11 +84,6 @@ define windows_smb::manage_smb_client_config (
       $smb_client_multichannel_reg_dword = 0
     } else {
       $smb_client_multichannel_reg_dword = 1
-    }
-
-    $smb_client_settings_create_resource_defaults = {
-      'ensure' => present,
-      'type'   => 'dword',
     }
 
     if ($smb_client_oplocks_disabled) {
