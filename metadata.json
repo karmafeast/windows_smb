@@ -1,6 +1,6 @@
 {
 	"name": "karmafeast-windows_smb",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"author": "karmafeast",
 	"summary": "Module that will manage windows SMB shares, server and client SMB configuration",
 	"license": "Apache-2.0",
@@ -9,10 +9,10 @@
 	"issues_url": "https://github.com/karmafeast/windows_smb/issues",
 	"dependencies": [{
 			"name": "puppetlabs/stdlib",
-			"version_requirement": ">= 4.6.0 < 5.0.0"
+			"version_requirement": ">= 4.6.0 < 10.0.0"
 		},{
 			"name": "puppetlabs/powershell",
-			"version_requirement": ">= 1.0.1 < 2.0.0"
+			"version_requirement": ">= 1.0.1 < 10.0.0"
 		},{
 			"name": "puppet/windowsfeature",
 			"version_requirement": ">= 1.1.0 < 10.0.0"
@@ -30,6 +30,7 @@
 			"operatingsystemrelease": [ "2008R2",
 				"2012",
 				"2012R2",
+				"2016",
 				"10.x"
 			]
 		}

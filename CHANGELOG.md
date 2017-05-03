@@ -1,3 +1,7 @@
+#2017-05-03 - Release 0.4.2
+
+needing this one again... fixed some bad client settings stuff for oplocks which doesnt seem to exist in 2016 at the very least... 
+
 #2016-04-26 - Release 0.4.1
 
 ##NOTE NEW DEPENDENCY ON `puppetlabs_registry` as of 0.4.0 - see metadata.json

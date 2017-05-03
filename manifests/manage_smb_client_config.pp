@@ -175,10 +175,10 @@ define windows_smb::manage_smb_client_config (
         data => $smb_client_keep_connection_seconds,
       }
       ,
-      'HKLM\SYSTEM\CurrentControlSet\Services\SmbMRx\Parameters\OplocksDisabled'                                   => {
-        data => $smb_client_oplocks_reg_dword,
-      }
-      ,
+      #'HKLM\SYSTEM\CurrentControlSet\Services\SmbMRx\Parameters\OplocksDisabled'                                   => {
+      #  data => $smb_client_oplocks_reg_dword,
+      #}
+      #,
       'HKLM\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\SESSTIMEOUT'                            => {
         data => $smb_client_session_timeout_seconds,
       }
@@ -277,10 +277,10 @@ define windows_smb::manage_smb_client_config (
         data => 600,
       }
       ,
-      'HKLM\SYSTEM\CurrentControlSet\Services\SmbMRx\Parameters\OplocksDisabled'                                   => {
-        data => 0,
-      }
-      ,
+      #'HKLM\SYSTEM\CurrentControlSet\Services\SmbMRx\Parameters\OplocksDisabled'                                   => {
+      #  data => 0,
+      #}
+      #,
       'HKLM\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\SESSTIMEOUT'                            => {
         data => 60,
       }
