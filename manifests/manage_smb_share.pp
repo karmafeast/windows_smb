@@ -53,6 +53,7 @@ define windows_smb::manage_smb_share (
   if (empty($smb_share_access_full)) {
     $access_full_join          = ''
     $access_full_create_string = ''
+      $fixed_full_access_str = ''
   } else {
     if (!empty($smb_share_access_change)) {
       $smb_share_access_full.each |String $item| {
@@ -87,6 +88,7 @@ define windows_smb::manage_smb_share (
   if (empty($smb_share_access_change)) {
     $access_change_join          = ''
     $access_change_create_string = ''
+    $fixed_change_access_str = ''
   } else {
     if (!empty($smb_share_access_full)) {
       $smb_share_access_change.each |String $item| {
@@ -121,6 +123,7 @@ define windows_smb::manage_smb_share (
   if (empty($smb_share_access_read)) {
     $access_read_join          = ''
     $access_read_create_string = ''
+     $fixed_read_access_str  = ''
   } else {
     if (!empty($smb_share_access_full)) {
       $smb_share_access_read.each |String $item| {
@@ -155,6 +158,7 @@ define windows_smb::manage_smb_share (
   if (empty($smb_share_access_deny)) {
     $access_deny_join          = ''
     $access_deny_create_string = ''
+    $fixed_deny_access_str = ''
   } else {
     if (!empty($smb_share_access_full)) {
       $smb_share_access_deny.each |String $item| {
