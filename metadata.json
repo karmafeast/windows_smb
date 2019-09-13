@@ -1,6 +1,6 @@
 {
 	"name": "karmafeast-windows_smb",
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"author": "karmafeast",
 	"summary": "Module that will manage windows SMB shares, server and client SMB configuration",
 	"license": "Apache-2.0",
@@ -31,6 +31,7 @@
 				"2012",
 				"2012R2",
 				"2016",
+				"2019",
 				"10.x"
 			]
 		}
