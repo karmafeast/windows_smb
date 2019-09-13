@@ -1,3 +1,7 @@
+#2019-09-13 - Release 0.4.3
+
+incorporate PR from skyrawrcode - vars were not properly initialized in share mgmt class, would cause issue when not populated via params.
+
 #2017-05-03 - Release 0.4.2
 
 needing this one again... fixed some bad client settings stuff for oplocks which doesnt seem to exist in 2016 at the very least... 
