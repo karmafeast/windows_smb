@@ -1,5 +1,5 @@
 define windows_smb::manage_smb_server_config (
-  $ensure = 'present',
+  $ensure                                        = 'present',
   $smb_server_asynchronous_credits               = 512,
   $smb_server_smb2_credits_min                   = 512,
   $smb_server_smb2_credits_max                   = 8192,
@@ -10,7 +10,8 @@ define windows_smb::manage_smb_server_config (
   $smb_server_additional_critical_worker_threads = 0,
   $smb_server_additional_delayed_worker_threads  = 0,
   $smb_server_ntfs_8dot3_name_creation           = undef,
-  $smb_server_ntfs_disable_last_access_update    = undef) {
+  $smb_server_ntfs_disable_last_access_update    = undef
+) {
   if (!$::osfamily == 'windows') {
     fail('cannot run windows_smb::manage_smb_server_config against non-windows OS platform')
   }
@@ -37,16 +38,16 @@ define windows_smb::manage_smb_server_config (
     $process_ntfs_8dot3 = true
 
     case $smb_server_ntfs_8dot3_name_creation {
-      '0', 'enabled'    : {
+      '0', 'enabled': {
         $nfts_8dot3_int = 0
       }
-      '1', 'disabled'   : {
+      '1', 'disabled': {
         $nfts_8dot3_int = 1
       }
-      '2', 'per_volume' : {
+      '2', 'per_volume': {
         $nfts_8dot3_int = 2
       }
-      default           : {
+      default: {
         fail('reached default case for 8dot3 name creation - should have been caught by validate_re - logic failure')
       }
     }

@@ -1,29 +1,30 @@
 define windows_smb::manage_smb_client_config (
-  $ensure = 'present',
+  $ensure                                               = 'present',
   $smb_client_connection_count_per_interface            = 1,
   $smb_client_connection_count_per_rss_interface        = 4,
   $smb_client_connection_count_per_rdma_interface       = 2,
   $smb_client_connection_count_per_server_max           = 32,
   $smb_client_dormant_directory_timeout_seconds         = 600,
   $smb_client_directory_cache_lifetime_seconds          = 10,
-  $smb_client_dormant_file_limit          = 1023,
-  $smb_client_directory_cache_entries_max = 16,
+  $smb_client_dormant_file_limit                        = 1023,
+  $smb_client_directory_cache_entries_max               = 16,
   $smb_client_directory_cache_entry_size_max_bytes      = 65536,
   $smb_client_file_not_found_cache_lifetime_seconds     = 5,
   $smb_client_file_not_found_cache_entries_max          = 128,
   $smb_client_file_info_cache_lifetime_seconds          = 10,
-  $smb_client_file_info_cache_entries_max = 64,
-  $smb_client_enable_bandwidth_throttling = true,
-  $smb_client_enable_large_mtu            = true,
+  $smb_client_file_info_cache_entries_max               = 64,
+  $smb_client_enable_bandwidth_throttling               = true,
+  $smb_client_enable_large_mtu                          = true,
   $smb_client_enable_byte_range_locking_read_only_files = true,
-  $smb_client_enable_multichannel         = true,
+  $smb_client_enable_multichannel                       = true,
   $smb_client_extended_session_timeout_seconds          = 1000,
-  $smb_client_keep_connection_seconds     = 600,
-  $smb_client_max_commands                = 50,
-  $smb_client_oplocks_disabled            = false,
-  $smb_client_session_timeout_seconds     = 60,
-  $smb_client_use_opportunistic_locking   = true,
-  $smb_client_window_size_threshold       = 1) {
+  $smb_client_keep_connection_seconds                   = 600,
+  $smb_client_max_commands                              = 50,
+  $smb_client_oplocks_disabled                          = false,
+  $smb_client_session_timeout_seconds                   = 60,
+  $smb_client_use_opportunistic_locking                 = true,
+  $smb_client_window_size_threshold                     = 1
+) {
   if (!$::osfamily == 'windows') {
     fail('cannot run windows_smb::manage_smb_client_config against non-windows OS platform')
   }
